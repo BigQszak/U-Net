@@ -112,7 +112,7 @@ $RECYCLE.BIN/
 *.lnk
 
 # Exclude data
-/data/
+/data
 
 # Jupter NB Checkpoints
 .ipynb_checkpoints/
