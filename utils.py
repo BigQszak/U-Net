@@ -4,7 +4,7 @@ from dataset import CarvanaDataset
 from torch.utils.data import DataLoader
 
 
-def save_checkpoint(state, filename="my_checkpoint.pth.tar"):
+def save_checkpoint(state, filename):  # "my_checkpoint.pth.tar"
     print("=> Saving checkpoint")
     torch.save(state, filename)
 
@@ -86,7 +86,7 @@ def check_accuracy(loader, model, device="cuda"):
 def save_predictions_as_imgs(
     loader,
     model,
-    folder="C:/Users/krzak/OneDrive/Pulpit/Code/ML_DL/U-Net_Segmentation/saved_images",
+    folder="saved_images/",
     device="cuda",
 ):
     model.eval()
