@@ -95,12 +95,20 @@ def main():
     )
 
     if hyperparameters.LOAD_MODEL:
-        load_checkpoint(torch.load("checkpoints/first_checkpoint.pth.tar"), model)
+        load_checkpoint(
+            torch.load(
+                os.path.join(
+                    os.path.dirname(__file__), "checkpoints", "first_checkpoint.pth.tar"
+                )
+            ),
+            model,
+        )
 
     # check_accuracy(val_loader, model, device=DEVICE)
 
     scaler = torch.cuda.amp.GradScaler()
 
+    best_dice_score = 0
     for epoch in range(hyperparameters.NUM_EPOCHS):
         train_fn(train_loader, model, optimizer, loss_fn, scaler)
 
@@ -109,15 +117,20 @@ def main():
             "state_dict": model.state_dict(),
             "optimizer": optimizer.state_dict(),
         }
-        save_checkpoint(checkpoint, filename=f"first_checkpoint.pth.tar")
+        save_checkpoint(checkpoint, filename=f"epoch_{epoch}_checkpoint.pth.tar")
 
         # check accuracy
-        check_accuracy(val_loader, model, device=DEVICE)
+        dice_score = check_accuracy(val_loader, model, device=DEVICE)
 
-        # print examples
+        if dice_score > best_dice_score:
+            best_dice_score = dice_score
+            save_checkpoint(checkpoint, filename=f"best_checkpoint.pth.tar")
+
+        # save examples to the folder
         save_predictions_as_imgs(
             val_loader,
             model,
+            epoch,
             folder=os.path.join(os.path.dirname(__file__), "predictions"),
             device=DEVICE,
         )

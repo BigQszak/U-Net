@@ -116,3 +116,6 @@ $RECYCLE.BIN/
 
 # Jupter NB Checkpoints
 .ipynb_checkpoints/
+
+# Models checkpoints 
+/checkpoints/*.pth.tar
