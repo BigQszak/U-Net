@@ -95,7 +95,7 @@ def main():
     )
 
     if hyperparameters.LOAD_MODEL:
-        load_checkpoint(torch.load("checkpoints/my_checkpoint.pth.tar"), model)
+        load_checkpoint(torch.load("checkpoints/first_checkpoint.pth.tar"), model)
 
     # check_accuracy(val_loader, model, device=DEVICE)
 
@@ -109,7 +109,7 @@ def main():
             "state_dict": model.state_dict(),
             "optimizer": optimizer.state_dict(),
         }
-        save_checkpoint(checkpoint)
+        save_checkpoint(checkpoint, filename=f"first_checkpoint.pth.tar")
 
         # check accuracy
         check_accuracy(val_loader, model, device=DEVICE)
