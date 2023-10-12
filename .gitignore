@@ -113,6 +113,8 @@ $RECYCLE.BIN/
 
 # Exclude data
 /data
+/predictions
+/runs
 
 # Jupter NB Checkpoints
 .ipynb_checkpoints/

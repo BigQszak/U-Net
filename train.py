@@ -6,8 +6,9 @@ from tqdm import tqdm
 import torch.nn as nn
 import torch.optim as optim
 import argparse
-from model import UNet
+from torch.utils.tensorboard import SummaryWriter  # print to tensorboard
 
+from model import UNet
 import hyperparameters
 
 from utils import (
@@ -89,7 +90,7 @@ def main():
     )
     parser.add_argument(
         "--learning_rate",
-        type=int,
+        type=float,
         default=hyperparameters.LEARNING_RATE,
         help="Learning rate for training",
     )
@@ -148,21 +149,16 @@ def main():
             model,
         )
 
-        """
-        What happend when we let this option fly?
-        """
+    # chck accuracy before training - in case of pretrained model we will see its performance
     check_accuracy(val_loader, model, device=DEVICE)
 
     scaler = torch.cuda.amp.GradScaler()
 
     best_dice_score = 0
     for epoch in range(args.num_epochs):
-        """
-        What happend with be below option
-        """
         print(f"Epoch {epoch + 1}/{args.num_epochs}")
-        print("-" * 10)
-        train_fn(train_loader, model, optimizer, loss_fn, scaler)
+        print("-" * 30)
+        train_fn(train_loader, model, optimizer, loss_fn, scaler, writer)
 
         # save model
         checkpoint = {
