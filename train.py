@@ -5,6 +5,7 @@ from albumentations.pytorch import ToTensorV2
 from tqdm import tqdm
 import torch.nn as nn
 import torch.optim as optim
+import argparse
 from model import UNet
 
 import hyperparameters
@@ -16,6 +17,7 @@ from utils import (
     check_accuracy,
     save_predictions_as_imgs,
 )
+
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -42,17 +44,10 @@ def train_fn(loader, model, optimizer, loss_fn, scaler):
         loop.set_postfix(loss=loss.item())
 
 
-def transformation():
-    pass
-
-
-def main():
-    # change to functions
+def transformation(image_height, image_width):
     train_transform = A.Compose(
         [
-            A.Resize(
-                height=hyperparameters.IMAGE_HEIGHT, width=hyperparameters.IMAGE_WIDTH
-            ),
+            A.Resize(height=image_height, width=image_width),
             A.Rotate(limit=35, p=1.0),
             A.HorizontalFlip(p=0.5),
             A.VerticalFlip(p=1.0),
@@ -75,41 +70,98 @@ def main():
         ]
     )
 
+    return train_transform, val_transform
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Training parameters")
+    parser.add_argument(
+        "--batch_size",
+        type=int,
+        default=hyperparameters.BATCH_SIZE,
+        help="Batch size for training",
+    )
+    parser.add_argument(
+        "--num_epochs",
+        type=int,
+        default=hyperparameters.NUM_EPOCHS,
+        help="Number of epochs for training",
+    )
+    parser.add_argument(
+        "--learning_rate",
+        type=int,
+        default=hyperparameters.LEARNING_RATE,
+        help="Learning rate for training",
+    )
+    parser.add_argument(
+        "--image_height",
+        type=int,
+        default=hyperparameters.IMAGE_HEIGHT,
+        help="Height of input images",
+    )
+    parser.add_argument(
+        "--image_width",
+        type=int,
+        default=hyperparameters.IMAGE_WIDTH,
+        help="Width of input images",
+    )
+    parser.add_argument(
+        "--load_model",
+        type=str,
+        default=hyperparameters.LOAD_MODEL,
+        help="Option to load pretrained model",
+    )
+
+    args = parser.parse_args()
+
+    print(f"Batch size: {args.batch_size}\nNumber of epochs: {args.num_epochs}\n")
+
+    ################################################################################
+    train_transform, val_transform = transformation(args.image_height, args.image_width)
+
     model = UNet(in_channels=3, out_channels=1).to(device=DEVICE)
 
     # Changing out_channels to ex. 3 & loss to cross entropy will yield class segmentation
 
     loss_fn = nn.BCEWithLogitsLoss()
-    optimizer = optim.Adam(model.parameters(), lr=hyperparameters.LEARNING_RATE)
+    optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
 
     train_loader, val_loader = get_loaders(
         hyperparameters.TRAIN_IMG_DIR,
         hyperparameters.TRAIN_MASK_DIR,
         hyperparameters.VAL_IMG_DIR,
         hyperparameters.VAL_MASK_DIR,
-        hyperparameters.BATCH_SIZE,
+        args.batch_size,
         train_transform,
         val_transform,
         hyperparameters.NUM_WORKERS,
         hyperparameters.PIN_MEMORY,
     )
 
-    if hyperparameters.LOAD_MODEL:
+    if args.load_model:
         load_checkpoint(
             torch.load(
                 os.path.join(
-                    os.path.dirname(__file__), "checkpoints", "first_checkpoint.pth.tar"
+                    os.path.dirname(__file__), "checkpoints", "best_checkpoint.pth.tar"
                 )
             ),
             model,
         )
 
-    # check_accuracy(val_loader, model, device=DEVICE)
+        """
+        What happend when we let this option fly?
+        """
+    check_accuracy(val_loader, model, device=DEVICE)
 
     scaler = torch.cuda.amp.GradScaler()
 
     best_dice_score = 0
-    for epoch in range(hyperparameters.NUM_EPOCHS):
+    for epoch in range(args.num_epochs):
+        """
+        What happend with be below option
+        """
+        print(f"Epoch {epoch + 1}/{args.num_epochs}")
+        print("-" * 10)
         train_fn(train_loader, model, optimizer, loss_fn, scaler)
 
         # save model
