@@ -23,7 +23,7 @@ from utils import (
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 
-def train_fn(loader, model, optimizer, loss_fn, scaler):
+def train_fn(loader, model, optimizer, loss_fn, scaler, writer, step):
     loop = tqdm(loader)
 
     for batch_idx, (data, targets) in enumerate(loop):
@@ -43,6 +43,11 @@ def train_fn(loader, model, optimizer, loss_fn, scaler):
 
         # update tqdm loop
         loop.set_postfix(loss=loss.item())
+
+        # Tensorboard
+        writer.add_scalar("Train Loss", loss, global_step=step)
+        # writer.add_scalar("Train Loss", loss, global_step=step)
+        step += 1
 
 
 def transformation(image_height, image_width):
@@ -154,11 +159,15 @@ def main():
 
     scaler = torch.cuda.amp.GradScaler()
 
+    # Tensorboard
+    writer = SummaryWriter(log_dir=os.path.join(os.path.dirname(__file__), "runs"))
+
+    step = 0
     best_dice_score = 0
     for epoch in range(args.num_epochs):
         print(f"Epoch {epoch + 1}/{args.num_epochs}")
         print("-" * 30)
-        train_fn(train_loader, model, optimizer, loss_fn, scaler, writer)
+        train_fn(train_loader, model, optimizer, loss_fn, scaler, writer, step)
 
         # save model
         checkpoint = {
