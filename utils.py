@@ -94,12 +94,20 @@ def save_predictions_as_imgs(
 ):
     model.eval()
     for idx, (x, y) in enumerate(loader):
-        x = x.to(device=device)
+        x = x.to(device=device)  # moves data to the device
         with torch.no_grad():
-            preds = torch.sigmoid(model(x))
-            preds = (preds > 0.5).float()
+            preds = torch.sigmoid(
+                model(x)
+            )  # pushees data though the model and applies sigmoid function to obtain predictions
+            preds = (
+                preds > 0.5
+            ).float()  # thresholding, conerting the output to binary values
 
-        torchvision.utils.save_image(preds, f"{folder}/epoch_{epoch}_pred_{idx}.png")
-        torchvision.utils.save_image(y.unsqueeze(1), f"{folder}/{idx}.png")
+        torchvision.utils.save_image(
+            preds, f"{folder}/epoch_{epoch}_pred_{idx}.png"
+        )  # saves binary masks as images
+        torchvision.utils.save_image(
+            y.unsqueeze(1), f"{folder}/{idx}.png"
+        )  # saves the groudn truth labels as images
 
     model.train()

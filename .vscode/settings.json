@@ -2,5 +2,8 @@
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter"
   },
-  "python.formatting.provider": "none"
+  "python.formatting.provider": "none",
+  "python.terminal.activateEnvironment": true,
+  "terminal.integrated.shell.windows": "C:\\Windows\\System32\\cmd.exe",
+  "python.condaPath": "C:\\Users\\Your User Name\\Anaconda3\\Scripts\\conda.exe"
 }

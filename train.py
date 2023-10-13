@@ -113,9 +113,8 @@ def main():
     )
     parser.add_argument(
         "--load_model",
-        type=str,
-        default=hyperparameters.LOAD_MODEL,
-        help="Option to load pretrained model",
+        action="store_true",
+        help="Option to load pretrained model (default is False)",
     )
 
     args = parser.parse_args()
@@ -154,7 +153,7 @@ def main():
             model,
         )
 
-    # chck accuracy before training - in case of pretrained model we will see its performance
+    # check accuracy before training - in case of pretrained model we will see its performance
     check_accuracy(val_loader, model, device=DEVICE)
 
     scaler = torch.cuda.amp.GradScaler()
@@ -184,13 +183,14 @@ def main():
             save_checkpoint(checkpoint, filename=f"best_checkpoint.pth.tar")
 
         # save examples to the folder
-        save_predictions_as_imgs(
-            val_loader,
-            model,
-            epoch,
-            folder=os.path.join(os.path.dirname(__file__), "predictions"),
-            device=DEVICE,
-        )
+        if epoch % 5 == 0:
+            save_predictions_as_imgs(
+                val_loader,
+                model,
+                epoch,
+                folder=os.path.join(os.path.dirname(__file__), "predictions"),
+                device=DEVICE,
+            )
 
 
 if __name__ == "__main__":
