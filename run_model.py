@@ -48,14 +48,14 @@ def main():
     img_tensor = transform(img).unsqueeze(0).to(device=DEVICE)
 
     # Run inference
-    with torch.no_grad():
+    with torch.inference_mode():
         output = torch.sigmoid(model(img_tensor))
 
     # Apply thresholding for binary segmentation
     predicted_mask = (output > 0.5).float()
 
     # Save the predicted mask
-    utils.save_image(predicted_mask, f"segmented.png")
+    utils.save_image(predicted_mask, f"predicted_mask.png")
 
     # Display the saved mask
     predicted_mask_image = Image.open("predicted_mask.png")

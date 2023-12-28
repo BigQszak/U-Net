@@ -79,7 +79,7 @@ def transformation(image_height, image_width):
     return train_transform, val_transform
 
 
-def main():
+def parse_args():
     parser = argparse.ArgumentParser(description="Training parameters")
     parser.add_argument(
         "--batch_size",
@@ -118,6 +118,11 @@ def main():
     )
 
     args = parser.parse_args()
+    return args
+
+
+def main():
+    args = parse_args()
 
     print(f"Batch size: {args.batch_size}\nNumber of epochs: {args.num_epochs}\n")
 
@@ -145,12 +150,12 @@ def main():
 
     if args.load_model:
         load_checkpoint(
-            torch.load(
+            checkpoint=torch.load(
                 os.path.join(
                     os.path.dirname(__file__), "checkpoints", "best_checkpoint.pth.tar"
                 )
             ),
-            model,
+            model=model,
         )
 
     # check accuracy before training - in case of pretrained model we will see its performance
@@ -163,6 +168,7 @@ def main():
 
     step = 0
     best_dice_score = 0
+
     for epoch in range(args.num_epochs):
         print(f"Epoch {epoch + 1}/{args.num_epochs}")
         print("-" * 30)
@@ -173,7 +179,9 @@ def main():
             "state_dict": model.state_dict(),
             "optimizer": optimizer.state_dict(),
         }
-        save_checkpoint(checkpoint, filename=f"epoch_{epoch}_checkpoint.pth.tar")
+        save_checkpoint(
+            checkpoint=checkpoint, filename=f"epoch_{epoch}_checkpoint.pth.tar"
+        )
 
         # check accuracy
         dice_score = check_accuracy(val_loader, model, device=DEVICE)

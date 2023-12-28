@@ -64,7 +64,7 @@ def check_accuracy(loader, model, device="cuda"):
     dice_score = 0
     model.eval()
 
-    with torch.no_grad():
+    with torch.inference_mode():
         for x, y in loader:
             x = x.to(device)
             y = y.to(device).unsqueeze(1)
